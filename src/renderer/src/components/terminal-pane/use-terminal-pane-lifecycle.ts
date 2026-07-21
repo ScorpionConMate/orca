@@ -48,6 +48,7 @@ import type {
   TuiAgent
 } from '../../../../shared/types'
 import type { TerminalPaneSplitSource } from '../../../../shared/feature-education-telemetry'
+import type { PluginTerminalThemeRegistration } from '../../../../shared/plugins/plugin-terminal-theme-artifact'
 import type { EventProps } from '../../../../shared/telemetry-events'
 import type { StartupCommandDelivery } from '../../../../shared/codex-startup-delivery'
 import type {
@@ -239,6 +240,7 @@ type UseTerminalPaneLifecycleDeps = {
   isActive: boolean
   isVisible: boolean
   systemPrefersDark: boolean
+  pluginTerminalThemes: readonly PluginTerminalThemeRegistration[]
   settings: GlobalSettings | null | undefined
   settingsRef: React.RefObject<GlobalSettings | null | undefined>
   requestOpenLinksInAppPreference: TerminalLinkRoutingPreferenceRequester
@@ -502,6 +504,7 @@ export function useTerminalPaneLifecycle({
   isActive,
   isVisible,
   systemPrefersDark,
+  pluginTerminalThemes,
   settings,
   settingsRef,
   requestOpenLinksInAppPreference,
@@ -1763,7 +1766,7 @@ export function useTerminalPaneLifecycle({
     applyAppearance(manager)
     // Why: effectiveMacOptionAsAlt can change mid-session (layout switch or override flip); re-apply macOptionIsMeta live on every pane.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings, systemPrefersDark, effectiveMacOptionAsAlt])
+  }, [settings, systemPrefersDark, effectiveMacOptionAsAlt, pluginTerminalThemes])
 
   useEffect(() => {
     managerRef.current?.setTerminalGpuAcceleration(settings?.terminalGpuAcceleration ?? 'auto')

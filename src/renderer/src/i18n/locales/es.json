@@ -6634,7 +6634,9 @@
           "builtin_themes": "Integrados",
           "imported_from": "Importado desde {{value0}}",
           "imported_themes": "Importados",
-          "search_terminal_themes": "Buscar temas de terminal"
+          "search_terminal_themes": "Buscar temas de terminal",
+          "plugin_themes": "Temas de plugins",
+          "contributed_by": "Aportado por {{value0}}"
         },
         "SettingsSidebar": {
           "e0900f83e7": "SSH",
@@ -9391,7 +9393,9 @@
           "viewAdvisory": "Ver aviso",
           "rollback": "Revertir",
           "noDescription": "No description provided.",
-          "reviewAndEnable": "Review & enable"
+          "reviewAndEnable": "Review & enable",
+          "inUse": "In use",
+          "useTheme": "Use theme"
         },
         "PluginsSettingsSection": {
           "loadFailed": "No se pudieron cargar los plugins.",
@@ -9411,6 +9415,7 @@
           "settingsUpdateFailed": "No se pudo guardar la configuración de plugins.",
           "rollbackFailed": "No se pudo revertir este plugin. Es posible que no haya una versión inmutable anterior disponible.",
           "noInstalledResults": "No installed plugins match this search.",
+          "themeApplyFailed": "The plugin was enabled, but Orca could not apply its terminal theme.",
           "noInstalledResultsTitle": "No matching plugins",
           "emptyTitle": "No plugins installed yet"
         },
@@ -9435,6 +9440,18 @@
           "invalidManifest": "orca-plugin.json no es válido. Corrígelo y actualiza los plugins.",
           "invalidArtifact": "Falta un archivo de proceso o panel declarado, o no es seguro. Corrige los archivos del plugin y actualiza.",
           "consentChanged": "El plugin cambió mientras lo revisabas. Cierra este diálogo y revisa los permisos actualizados."
+        },
+        "AppearanceInterfaceSection": {
+          "pluginTheme": {
+            "title": "Tema de plugin",
+            "description": "Aplica un tema de un plugin de Orca habilitado.",
+            "builtIn": "Usar tema integrado"
+          },
+          "pluginIconTheme": {
+            "title": "Tema de iconos",
+            "description": "Usa iconos de archivos, carpetas, barra lateral y agentes de un plugin de Orca habilitado.",
+            "builtIn": "Usar iconos integrados"
+          }
         },
         "PluginVmRecipeConsentPreview": {
           "create": "Crear",
@@ -9490,6 +9507,9 @@
           "install": "Install"
         },
         "PluginMarketplacePreviewDialog": {
+          "themes": "{{value0}} temas de la aplicación",
+          "iconThemes": "{{value0}} temas de iconos",
+          "terminalThemes": "{{value0}} temas de terminal",
           "languagePacks": "{{value0}} paquetes de idioma",
           "commands": "{{value0}} comandos",
           "keybindings": "{{value0}} atajos de teclado",
@@ -9515,6 +9535,9 @@
           "provenance": "Reviewed source",
           "close": "Close",
           "upToDate": "Up to date",
+          "themesOne": "1 app theme",
+          "iconThemesOne": "1 icon theme",
+          "terminalThemesOne": "1 terminal theme",
           "languagePacksOne": "1 language pack",
           "commandsOne": "1 command",
           "keybindingsOne": "1 keyboard shortcut",
