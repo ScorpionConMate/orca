@@ -18,6 +18,7 @@ import {
 import {
   isKeepaliveFrame,
   RuntimeRpcEnvelopeSchema,
+  type RuntimeOrchestrationEnvelope,
   type RuntimeRpcResponse
 } from './runtime-rpc-envelope'
 // Re-export so existing value importers of `RemoteRuntimeClientError` are
@@ -69,7 +70,7 @@ export async function sendRemoteRuntimeRequest<TResult>(
   method: string,
   params: unknown,
   timeoutMs: number,
-  envelope?: { orchestrationCapability?: string; orchestrationRequestId?: string }
+  envelope?: RuntimeOrchestrationEnvelope
 ): Promise<RuntimeRpcResponse<TResult>> {
   return await new Promise((resolve, reject) => {
     const requestId = randomUUID()
