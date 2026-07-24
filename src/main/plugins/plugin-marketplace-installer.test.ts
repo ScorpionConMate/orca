@@ -11,7 +11,7 @@ const git = vi.hoisted(() => ({
   checkout: vi.fn(),
   version: '1.0.0',
   publisher: 'community',
-  id: 'theme',
+  id: 'notes',
   commit: 'a'.repeat(40),
   payload: 'first'
 }))
@@ -34,13 +34,13 @@ function marketplace(): PluginMarketplace {
     owner: 'community',
     plugins: [
       {
-        id: 'community.theme',
+        id: 'community.notes',
         source: {
           kind: 'git',
-          url: 'https://github.com/community/theme.git',
+          url: 'https://github.com/community/notes.git',
           ref: 'stable'
         },
-        categories: ['themes']
+        categories: ['productivity']
       }
     ]
   }
@@ -54,7 +54,7 @@ async function writeCurrentPlugin(destination: string): Promise<void> {
       manifestVersion: 1,
       id: git.id,
       publisher: git.publisher,
-      name: 'Theme',
+      name: 'Notes',
       version: git.version,
       engines: { orca: '>=1.0.0' },
       pluginApi: 1,
@@ -95,7 +95,7 @@ async function setup(): Promise<{
 beforeEach(() => {
   git.version = '1.0.0'
   git.publisher = 'community'
-  git.id = 'theme'
+  git.id = 'notes'
   git.commit = 'a'.repeat(40)
   git.payload = 'first'
   git.checkout.mockReset()
@@ -113,9 +113,9 @@ describe('PluginMarketplaceInstaller', () => {
   it('previews exact validated bytes and records marketplace provenance on install', async () => {
     const { root, installer, sourceId } = await setup()
 
-    const preview = await installer.preview(sourceId, 'community.theme')
+    const preview = await installer.preview(sourceId, 'community.notes')
     expect(preview).toMatchObject({
-      pluginKey: 'community.theme',
+      pluginKey: 'community.notes',
       resolvedCommit: 'a'.repeat(40),
       marketplaceCommit: 'f'.repeat(40),
       manifest: { version: '1.0.0' }
@@ -127,7 +127,7 @@ describe('PluginMarketplaceInstaller', () => {
     }
     expect(result).toMatchObject({ ok: true, resolvedCommit: 'a'.repeat(40) })
     const lock = await readPluginLockfile(join(root, 'plugins'))
-    expect(lock.plugins['community.theme']?.source).toEqual({
+    expect(lock.plugins['community.notes']?.source).toEqual({
       kind: 'marketplace',
       marketplace: {
         url: 'https://github.com/community/plugins.git',
@@ -135,7 +135,7 @@ describe('PluginMarketplaceInstaller', () => {
         resolvedCommit: 'f'.repeat(40)
       },
       plugin: {
-        url: 'https://github.com/community/theme.git',
+        url: 'https://github.com/community/notes.git',
         ref: 'stable'
       }
     })
@@ -143,7 +143,7 @@ describe('PluginMarketplaceInstaller', () => {
 
   it('requires a fresh review when the plugin ref moves after preview', async () => {
     const { root, installer, sourceId } = await setup()
-    const preview = await installer.preview(sourceId, 'community.theme')
+    const preview = await installer.preview(sourceId, 'community.notes')
     git.commit = 'b'.repeat(40)
     git.version = '2.0.0'
 
@@ -160,14 +160,14 @@ describe('PluginMarketplaceInstaller', () => {
     const { installer, sourceId } = await setup()
     git.publisher = 'attacker'
 
-    await expect(installer.preview(sourceId, 'community.theme')).rejects.toThrow(
-      'attacker.theme does not match marketplace listing community.theme'
+    await expect(installer.preview(sourceId, 'community.notes')).rejects.toThrow(
+      'attacker.notes does not match marketplace listing community.notes'
     )
   })
 
   it('updates from recorded marketplace provenance and rolls back one immutable version', async () => {
     const { root, installer, sourceId } = await setup()
-    const firstPreview = await installer.preview(sourceId, 'community.theme')
+    const firstPreview = await installer.preview(sourceId, 'community.notes')
     const firstInstall = await installer.install(firstPreview)
     expect(firstInstall.ok).toBe(true)
     if (!firstInstall.ok) {
@@ -177,20 +177,20 @@ describe('PluginMarketplaceInstaller', () => {
     git.commit = 'b'.repeat(40)
     git.version = '2.0.0'
     git.payload = 'second'
-    const updatePreview = await installer.previewInstalledUpdate('community.theme')
+    const updatePreview = await installer.previewInstalledUpdate('community.notes')
     expect(updatePreview).toMatchObject({ resolvedCommit: 'b'.repeat(40) })
     await expect(installer.install(updatePreview)).resolves.toMatchObject({
       ok: true,
       version: '2.0.0'
     })
 
-    await expect(installer.rollback('community.theme')).resolves.toMatchObject({
+    await expect(installer.rollback('community.notes')).resolves.toMatchObject({
       ok: true,
       version: '1.0.0',
       contentHash: firstInstall.contentHash
     })
     const lock = await readPluginLockfile(join(root, 'plugins'))
-    expect(lock.plugins['community.theme']).toMatchObject({
+    expect(lock.plugins['community.notes']).toMatchObject({
       version: '1.0.0',
       resolvedCommit: 'a'.repeat(40)
     })

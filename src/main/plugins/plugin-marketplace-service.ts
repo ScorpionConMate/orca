@@ -179,7 +179,12 @@ export class PluginMarketplaceService {
       return null
     }
     const snapshot = await this.store.readSnapshot(source.id)
-    const entry = snapshot?.marketplace.plugins.find((plugin) => plugin.id === pluginKey)
+    // Why: preview and install resolve listings through here, so an unsupported
+    // pack must be unreachable by key too — hiding only the catalog card would
+    // move the dead install one click later instead of removing it.
+    const entry = snapshot?.marketplace.plugins.find(
+      (plugin) => plugin.id === pluginKey && isMarketplaceListingSupported(plugin.categories)
+    )
     return snapshot && entry ? this.listingFromEntry(source, snapshot, entry) : null
   }
 
