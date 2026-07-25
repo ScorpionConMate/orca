@@ -16,6 +16,7 @@ import {
   type RpcResponse
 } from './core'
 import type { TerminalStreamFrame } from '../../../shared/terminal-stream-protocol'
+import type { DeviceStreamFrame } from '../../../shared/device-stream-protocol'
 import type { FeatureInteractionId } from '../../../shared/feature-interactions'
 import { isBrowserPaneUiRuntimeRpcParams } from '../../../shared/runtime-rpc-feature-interaction-source'
 import {
@@ -110,6 +111,10 @@ export class RpcDispatcher {
         streamId: number,
         handler: (frame: TerminalStreamFrame) => void
       ) => () => void
+      registerDeviceBinaryStreamHandler?: (
+        streamId: number,
+        handler: (frame: DeviceStreamFrame) => void
+      ) => () => void
     }
   ): Promise<void> {
     const meta = this.meta()
@@ -141,7 +146,8 @@ export class RpcDispatcher {
           clientKind: options?.clientKind,
           pairing: options?.pairing,
           sendBinary: options?.sendBinary,
-          registerBinaryStreamHandler: options?.registerBinaryStreamHandler
+          registerBinaryStreamHandler: options?.registerBinaryStreamHandler,
+          registerDeviceBinaryStreamHandler: options?.registerDeviceBinaryStreamHandler
         })
         this.recordRuntimeFeatureInteraction(request.method, result, undefined, request.params)
         reply(JSON.stringify(successResponse(request.id, meta, result)))
@@ -177,7 +183,8 @@ export class RpcDispatcher {
           clientKind: options?.clientKind,
           pairing: options?.pairing,
           sendBinary: options?.sendBinary,
-          registerBinaryStreamHandler: options?.registerBinaryStreamHandler
+          registerBinaryStreamHandler: options?.registerBinaryStreamHandler,
+          registerDeviceBinaryStreamHandler: options?.registerDeviceBinaryStreamHandler
         },
         emit
       )

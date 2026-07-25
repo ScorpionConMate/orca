@@ -94,6 +94,10 @@ describe('getDefaultSettings', () => {
     expect(getDefaultSettings('/tmp').experimentalAgentDashboardPopout).toBe(false)
   })
 
+  it('keeps remote device streaming disabled by default', () => {
+    expect(getDefaultSettings('/tmp').experimentalRemoteDeviceStreaming).toBe(false)
+  })
+
   it('routes fresh Codex profiles through the real-home rollout by default', () => {})
 
   it('defaults local Windows projects to the host runtime', () => {

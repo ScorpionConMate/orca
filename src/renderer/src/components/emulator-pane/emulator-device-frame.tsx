@@ -32,6 +32,8 @@ import { useEmulatorControlStream } from './use-emulator-control-stream'
 import { useEmulatorPaneSize } from './use-emulator-pane-size'
 import { useEmulatorScreenKeyboard } from './use-emulator-screen-keyboard'
 import { useEmulatorStreamWindowVisible } from './use-emulator-stream-window-visibility'
+import type { DeviceSessionDescriptor } from '../../../../shared/device-session-types'
+import type { DeviceStreamClientState } from './device-stream-client'
 
 type EmulatorDeviceFrameProps = {
   previewUrl?: string
@@ -45,6 +47,10 @@ type EmulatorDeviceFrameProps = {
   isActive: boolean
   onTap: (x: number, y: number) => void
   onGesture: (points: EmulatorGesturePoint[]) => void
+  // Remote device streaming
+  remoteSessionDescriptor?: DeviceSessionDescriptor | null
+  remoteDeviceStreamingEnabled?: boolean
+  onRemoteStreamStateChange?: (state: DeviceStreamClientState | null) => void
 }
 
 const MAX_GESTURE_SAMPLES = 32,
@@ -71,7 +77,10 @@ export function EmulatorDeviceFrame({
   visualOrientation,
   isActive,
   onTap,
-  onGesture
+  onGesture,
+  remoteSessionDescriptor,
+  remoteDeviceStreamingEnabled,
+  onRemoteStreamStateChange
 }: EmulatorDeviceFrameProps) {
   const { paneRef, paneSize } = useEmulatorPaneSize()
   const pointerSamplesRef = useRef<PointerSample[] | null>(null)
@@ -402,6 +411,9 @@ export function EmulatorDeviceFrame({
             streamError={streamError}
             streamKey={streamKey}
             streamRotation={visualStreamGeometry.streamRotation}
+            remoteSessionDescriptor={remoteSessionDescriptor}
+            remoteDeviceStreamingEnabled={remoteDeviceStreamingEnabled}
+            onRemoteStreamStateChange={onRemoteStreamStateChange}
           />
         </div>
       </div>

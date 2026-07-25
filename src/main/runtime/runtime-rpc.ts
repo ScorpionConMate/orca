@@ -41,6 +41,10 @@ import {
   decodeTerminalStreamFrame,
   type TerminalStreamFrame
 } from '../../shared/terminal-stream-protocol'
+import {
+  decodeDeviceStreamFrame,
+  type DeviceStreamFrame
+} from '../../shared/device-stream-protocol'
 
 const DEFAULT_WS_PORT = 6768
 
@@ -163,6 +167,11 @@ const MOBILE_RPC_METHOD_ALLOWLIST = new Set([
   'clipboard.saveImageAsTempFile',
   'clipboard.startImageUpload',
   'diagnostics.memory',
+  'emulator.stream.open',
+  'emulator.stream.close',
+  'emulator.stream.start',
+  'emulator.session.list',
+  'emulator.session.get',
   'files.browseServerDir',
   'files.createFile',
   'files.list',
@@ -454,6 +463,10 @@ export class OrcaRuntimeRpcServer {
     string,
     Map<number, (frame: TerminalStreamFrame) => void>
   >()
+  private readonly deviceBinaryStreamHandlers = new Map<
+    string,
+    Map<number, (frame: DeviceStreamFrame) => void>
+  >()
   private readonly wsDispatchAbortStates = new Map<
     WebSocket,
     { controllers: Set<AbortController>; abortOnClose: () => void }
@@ -742,16 +755,46 @@ export class OrcaRuntimeRpcServer {
     }
   }
 
+  private registerDeviceBinaryStreamHandler(
+    connectionId: string | undefined,
+    streamId: number,
+    handler: (frame: DeviceStreamFrame) => void
+  ): () => void {
+    if (!connectionId || !Number.isInteger(streamId) || streamId < 0) {
+      return () => {}
+    }
+    let handlers = this.deviceBinaryStreamHandlers.get(connectionId)
+    if (!handlers) {
+      handlers = new Map()
+      this.deviceBinaryStreamHandlers.set(connectionId, handlers)
+    }
+    handlers.set(streamId, handler)
+    return () => {
+      const current = this.deviceBinaryStreamHandlers.get(connectionId)
+      if (!current || current.get(streamId) !== handler) {
+        return
+      }
+      current.delete(streamId)
+      if (current.size === 0) {
+        this.deviceBinaryStreamHandlers.delete(connectionId)
+      }
+    }
+  }
+
   private handleWebSocketBinaryMessage(bytes: Uint8Array<ArrayBufferLike>, ws: WebSocket): void {
     const connectionId = this.mobileSocketWiring?.getConnectionId(ws)
     if (!connectionId) {
       return
     }
-    const frame = decodeTerminalStreamFrame(bytes)
-    if (!frame) {
+    const termFrame = decodeTerminalStreamFrame(bytes)
+    if (termFrame) {
+      this.binaryStreamHandlers.get(connectionId)?.get(termFrame.streamId)?.(termFrame)
       return
     }
-    this.binaryStreamHandlers.get(connectionId)?.get(frame.streamId)?.(frame)
+    const deviceFrame = decodeDeviceStreamFrame(bytes)
+    if (deviceFrame) {
+      this.deviceBinaryStreamHandlers.get(connectionId)?.get(deviceFrame.streamId)?.(deviceFrame)
+    }
   }
 
   private registerWebSocketDispatchAbort(ws: WebSocket): {
@@ -943,6 +986,7 @@ export class OrcaRuntimeRpcServer {
               this.runtime.cleanupSubscriptionsForConnection(socket.connectionId)
               this.runtime.cancelMobileDictationForConnection(socket.connectionId)
               this.binaryStreamHandlers.delete(socket.connectionId)
+              this.deviceBinaryStreamHandlers.delete(socket.connectionId)
               if (!hasOtherConnections) {
                 this.runtime.onClientDisconnected(socket.device.deviceToken)
               }
@@ -1192,7 +1236,9 @@ export class OrcaRuntimeRpcServer {
         signal: abortRegistration?.signal,
         sendBinary,
         registerBinaryStreamHandler: (streamId, handler) =>
-          this.registerBinaryStreamHandler(connectionId, streamId, handler)
+          this.registerBinaryStreamHandler(connectionId, streamId, handler),
+        registerDeviceBinaryStreamHandler: (streamId, handler) =>
+          this.registerDeviceBinaryStreamHandler(connectionId, streamId, handler)
       })
     } finally {
       abortRegistration?.dispose()

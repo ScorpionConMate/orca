@@ -1,4 +1,4 @@
-import { Home, Power, RotateCw, Smartphone } from 'lucide-react'
+import { Home, Loader2, Power, RotateCw, Smartphone } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -6,11 +6,13 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import type { SimulatorDeviceRow } from './emulator-pane-types'
 import { translate } from '@/i18n/i18n'
+import type { DeviceStreamClientState } from './device-stream-client'
 
 type EmulatorPaneToolbarProps = {
   displayName: string
@@ -23,6 +25,8 @@ type EmulatorPaneToolbarProps = {
   onShutdown: () => void
   onHome: () => void
   onRotate: () => void
+  /** Remote stream state — when set, overrides the isLive/loading rendering for the status chip. */
+  remoteStreamState?: DeviceStreamClientState | null
 }
 
 export function EmulatorPaneToolbar({
@@ -35,34 +39,26 @@ export function EmulatorPaneToolbar({
   onAttach,
   onShutdown,
   onHome,
-  onRotate
+  onRotate,
+  remoteStreamState
 }: EmulatorPaneToolbarProps) {
-  // Why: the toolbar chip describes Orca's preview/control stream, not the
-  // lower-level CoreSimulator boot state.
-  const statusLabel = isLive ? 'Connected' : loading ? 'Working…' : 'Not connected'
-  const subtleStatus = isLive || loading
-  const statusClassName = subtleStatus
-    ? 'text-muted-foreground'
-    : 'border-border bg-muted text-muted-foreground'
+  const useRemote = remoteStreamState !== undefined && remoteStreamState !== null
 
   return (
     <div className="flex items-center gap-2 border-b border-border px-3 py-2">
       <Smartphone className="size-4 shrink-0 text-primary" />
       <span className="truncate font-medium">{displayName}</span>
-      <span
-        className={cn(
-          'shrink-0 text-[11px]',
-          !subtleStatus && 'rounded border px-1.5 py-0.5 text-[10px]',
-          statusClassName
-        )}
-      >
-        {statusLabel}
-      </span>
+      {/* Status badge — renders per spec */}
+      {useRemote ? (
+        <RemoteStatusBadge state={remoteStreamState} />
+      ) : (
+        <LocalStatusBadge isLive={isLive} loading={loading} />
+      )}
       <div className="flex-1" />
       <Select
         value={selectedUdid ?? ''}
         onValueChange={onSelectDevice}
-        disabled={loading || devices.length === 0}
+        disabled={loading || devices.length === 0 || useRemote}
       >
         <SelectTrigger className="h-7 w-[180px] text-xs">
           <SelectValue
@@ -88,7 +84,7 @@ export function EmulatorPaneToolbar({
             size="sm"
             className="h-7 gap-1 px-2 text-xs"
             onClick={onRotate}
-            disabled={!isLive || loading}
+            disabled={!canRotate(isLive, loading, remoteStreamState)}
             aria-label={translate(
               'auto.components.emulator.pane.emulator.pane.toolbar.6bd8dff42a',
               'Rotate'
@@ -115,7 +111,7 @@ export function EmulatorPaneToolbar({
             size="icon-xs"
             className="size-7"
             onClick={onHome}
-            disabled={!isLive || loading}
+            disabled={!canHome(isLive, loading, remoteStreamState)}
             aria-label={translate(
               'auto.components.emulator.pane.emulator.pane.toolbar.e7a0d1897e',
               'Home'
@@ -128,7 +124,7 @@ export function EmulatorPaneToolbar({
           {translate('auto.components.emulator.pane.emulator.pane.toolbar.e7a0d1897e', 'Home')}
         </TooltipContent>
       </Tooltip>
-      {isLive ? (
+      {canShowShutdown(isLive, remoteStreamState) ? (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -160,19 +156,159 @@ export function EmulatorPaneToolbar({
           variant={loading ? 'ghost' : 'default'}
           className={cn('h-7 px-2 text-xs', loading && 'text-muted-foreground')}
           onClick={onAttach}
-          disabled={loading || devices.length === 0}
+          disabled={loading || devices.length === 0 || isConnectDisabled(remoteStreamState)}
         >
-          {loading
-            ? translate(
+          {isConnectWorking(loading, remoteStreamState) ? (
+            <>
+              <Loader2 className="size-3.5 animate-spin" />
+              {translate(
                 'auto.components.emulator.pane.emulator.pane.toolbar.868c0f2938',
                 'Working…'
-              )
-            : translate(
-                'auto.components.emulator.pane.emulator.pane.toolbar.81b3571a07',
-                'Connect'
               )}
+            </>
+          ) : (
+            translate(
+              'auto.components.emulator.pane.emulator.pane.toolbar.81b3571a07',
+              'Connect'
+            )
+          )}
         </Button>
       )}
     </div>
+  )
+}
+
+// ── Status badge components ─────────────────────────────────────
+
+function LocalStatusBadge({
+  isLive,
+  loading
+}: {
+  isLive: boolean
+  loading: boolean
+}) {
+  if (isLive) {
+    return (
+      <Badge variant="secondary">
+        {translate('auto.components.emulator.pane.emulator.pane.toolbar.local.live', 'Live')}
+      </Badge>
+    )
+  }
+  if (loading) {
+    return (
+      <Badge variant="secondary">
+        <Loader2 className="size-3 animate-spin" />
+        {translate(
+          'auto.components.emulator.pane.emulator.pane.toolbar.local.connecting',
+          'Connecting'
+        )}
+      </Badge>
+    )
+  }
+  return (
+    <Badge variant="outline">
+      {translate(
+        'auto.components.emulator.pane.emulator.pane.toolbar.local.offline',
+        'Not connected'
+      )}
+    </Badge>
+  )
+}
+
+function RemoteStatusBadge({ state }: { state: DeviceStreamClientState }) {
+  switch (state) {
+    case 'connecting':
+      return (
+        <Badge variant="secondary">
+          <Loader2 className="size-3 animate-spin" />
+          {translate(
+            'auto.components.emulator.pane.emulator.pane.toolbar.remote.connecting',
+            'Connecting'
+          )}
+        </Badge>
+      )
+    case 'streaming':
+      return (
+        <Badge variant="secondary">
+          {translate(
+            'auto.components.emulator.pane.emulator.pane.toolbar.remote.live',
+            'Live'
+          )}
+        </Badge>
+      )
+    case 'recovering':
+      return (
+        <Badge variant="outline">
+          <Loader2 className="size-3 animate-spin" />
+          {translate(
+            'auto.components.emulator.pane.emulator.pane.toolbar.remote.recovering',
+            'Recovering'
+          )}
+        </Badge>
+      )
+    case 'disconnected':
+    case 'fallback':
+      return (
+        <Badge variant="destructive">
+          {translate(
+            'auto.components.emulator.pane.emulator.pane.toolbar.remote.disconnected',
+            'Disconnected'
+          )}
+        </Badge>
+      )
+  }
+}
+
+// ── Affordance helpers per spec ─────────────────────────────────
+
+function canRotate(
+  isLive: boolean,
+  loading: boolean,
+  remoteState: DeviceStreamClientState | null | undefined
+): boolean {
+  if (remoteState == null) {
+    return isLive && !loading
+  }
+  return remoteState === 'streaming' || remoteState === 'recovering'
+}
+
+function canHome(
+  isLive: boolean,
+  loading: boolean,
+  remoteState: DeviceStreamClientState | null | undefined
+): boolean {
+  return canRotate(isLive, loading, remoteState)
+}
+
+function canShowShutdown(
+  isLive: boolean,
+  remoteState: DeviceStreamClientState | null | undefined
+): boolean {
+  if (remoteState == null) {
+    return isLive
+  }
+  return remoteState === 'streaming' || remoteState === 'recovering'
+}
+
+function isConnectWorking(
+  loading: boolean,
+  remoteState: DeviceStreamClientState | null | undefined
+): boolean {
+  if (remoteState != null) {
+    return remoteState === 'connecting'
+  }
+  return loading
+}
+
+function isConnectDisabled(
+  remoteState: DeviceStreamClientState | null | undefined
+): boolean {
+  if (remoteState == null) {
+    return false
+  }
+  return (
+    remoteState === 'connecting' ||
+    remoteState === 'streaming' ||
+    remoteState === 'recovering'
   )
 }

@@ -243,6 +243,7 @@ export const SETTINGS_CHANGED_WHITELIST = [
   'experimentalTerminalAttention',
   'experimentalAgentHibernation',
   'experimentalEphemeralVms',
+  'experimentalRemoteDeviceStreaming',
   'geminiCliOAuthEnabled',
   'openAgentTabsInChatByDefault'
 ] as const satisfies readonly BooleanGlobalSettingsKey[]
@@ -1359,6 +1360,39 @@ export const eventSchemas = {
 
   editor_external_change_conflict_shown: editorExternalChangeConflictShownSchema,
   editor_external_change_conflict_action: editorExternalChangeConflictActionSchema,
+
+  // ── Device streaming (Phase 4) ──────────────────────────────────────────
+  // Structured events with no payload logging — counters + reason codes + timestamps only.
+  device_session_created: z
+    .object({ session_id: z.string(), device_id: z.string(), transport: z.literal('runtime-websocket'), provider: z.literal('android-sdk'), ts: z.number() })
+    .strict(),
+  device_session_released: z
+    .object({ session_id: z.string(), device_id: z.string(), transport: z.literal('runtime-websocket'), provider: z.literal('android-sdk'), ts: z.number() })
+    .strict(),
+  device_stream_opened: z
+    .object({ session_id: z.string(), device_id: z.string(), stream_id: z.number(), transport: z.literal('runtime-websocket'), provider: z.literal('android-sdk'), ts: z.number() })
+    .strict(),
+  device_stream_closed: z
+    .object({ session_id: z.string(), device_id: z.string(), stream_id: z.number(), transport: z.literal('runtime-websocket'), provider: z.literal('android-sdk'), ts: z.number(), reason: z.string().optional() })
+    .strict(),
+  device_stream_frame_dropped: z
+    .object({ session_id: z.string(), device_id: z.string(), stream_id: z.number(), transport: z.literal('runtime-websocket'), provider: z.literal('android-sdk'), ts: z.number(), pending_bytes_before: z.number() })
+    .strict(),
+  device_stream_keyframe_requested: z
+    .object({ session_id: z.string(), device_id: z.string(), stream_id: z.number(), transport: z.literal('runtime-websocket'), provider: z.literal('android-sdk'), ts: z.number() })
+    .strict(),
+  device_stream_recovered: z
+    .object({ session_id: z.string(), device_id: z.string(), stream_id: z.number(), transport: z.literal('runtime-websocket'), provider: z.literal('android-sdk'), ts: z.number(), recovery_attempts: z.number().int().nonnegative() })
+    .strict(),
+  device_stream_reconnect_started: z
+    .object({ session_id: z.string(), device_id: z.string(), transport: z.literal('runtime-websocket'), provider: z.literal('android-sdk'), ts: z.number(), attempt: z.number().int().positive() })
+    .strict(),
+  device_stream_reconnect_succeeded: z
+    .object({ session_id: z.string(), device_id: z.string(), transport: z.literal('runtime-websocket'), provider: z.literal('android-sdk'), ts: z.number(), attempt: z.number().int().positive() })
+    .strict(),
+  device_stream_reconnect_failed: z
+    .object({ session_id: z.string(), device_id: z.string(), transport: z.literal('runtime-websocket'), provider: z.literal('android-sdk'), ts: z.number(), attempt: z.number().int().positive() })
+    .strict(),
 
   smart_sort_class_distribution: smartSortClassDistributionSchema,
   smart_sort_class_1_promotion: smartSortClass1PromotionSchema,

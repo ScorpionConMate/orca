@@ -201,6 +201,7 @@ import {
 } from './ipc/pty'
 import { AgentBrowserBridge } from './browser/agent-browser-bridge'
 import { EmulatorBridge } from './emulator/emulator-bridge'
+import { _setRemoteDeviceStreamingEnabled } from './runtime/rpc/methods/emulator'
 import { browserCertificateTrustController, browserManager } from './browser/browser-manager'
 import { OffscreenBrowserBackend } from './browser/offscreen-browser-backend'
 import { initializeBrowserSessionsForApp } from './browser/browser-session-startup'
@@ -1832,13 +1833,17 @@ app.whenReady().then(async () => {
   logStartupMilestone('store-loaded')
   // Why: apply initial fallback WSL distro from store settings for global git/CLI calls.
   setDefaultWslDistroOverride(store.getSettings().terminalWindowsWslDistro ?? null)
+  _setRemoteDeviceStreamingEnabled(store.getSettings().experimentalRemoteDeviceStreaming === true)
   store.onSettingsChanged((updates, settings) => {
+    if ('experimentalRemoteDeviceStreaming' in updates) {
+      _setRemoteDeviceStreamingEnabled(settings.experimentalRemoteDeviceStreaming === true)
+    }
     if ('terminalWindowsWslDistro' in updates) {
       // Why: synchronize fallback WSL distro updates to runner.
       setDefaultWslDistroOverride(settings.terminalWindowsWslDistro ?? null)
     }
     if ('showMenuBarIcon' in updates) {
-      // Why: Store is the mutation authority for all settings writes, so every macOS toggle updates the native item live.
+      // Why: Store is the mutation authority for all settings writes, so every macOS toggle updates the native icon live.
       syncMacMenuBarIcon(settings.showMenuBarIcon !== false)
     }
   })

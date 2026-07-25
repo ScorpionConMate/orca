@@ -1,6 +1,7 @@
 // Why: single boundary between raw RPC frames and OrcaRuntimeService; keeps schema, handler, and result type on one object.
 import { ZodError, type ZodType } from 'zod'
 import type { TerminalStreamFrame } from '../../../shared/terminal-stream-protocol'
+import type { DeviceStreamFrame } from '../../../shared/device-stream-protocol'
 import type { OrcaRuntimeService } from '../orca-runtime'
 import type {
   DeviceCredentialInstalled,
@@ -67,6 +68,11 @@ export type RpcContext = {
   registerBinaryStreamHandler?: (
     streamId: number,
     handler: (frame: TerminalStreamFrame) => void
+  ) => () => void
+  // Why: device binary frames use a different kind byte (0x64) and have their own opcode namespace.
+  registerDeviceBinaryStreamHandler?: (
+    streamId: number,
+    handler: (frame: DeviceStreamFrame) => void
   ) => () => void
 }
 

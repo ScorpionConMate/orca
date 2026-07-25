@@ -13,6 +13,8 @@ import type {
   StreamSize,
   VisualStreamGeometry
 } from './emulator-device-frame-layout'
+import type { DeviceSessionDescriptor } from '../../../../shared/device-session-types'
+import type { DeviceStreamClientState } from './device-stream-client'
 
 type EmulatorScreenSurfaceProps = {
   frameLayout: DeviceFrameLayout | null
@@ -35,6 +37,10 @@ type EmulatorScreenSurfaceProps = {
   streamError: boolean
   streamKey?: string
   streamRotation: VisualStreamGeometry['streamRotation']
+  // Remote device streaming
+  remoteSessionDescriptor?: DeviceSessionDescriptor | null
+  remoteDeviceStreamingEnabled?: boolean
+  onRemoteStreamStateChange?: (state: DeviceStreamClientState | null) => void
 }
 
 export function EmulatorScreenSurface({
@@ -57,7 +63,10 @@ export function EmulatorScreenSurface({
   showStream,
   streamError,
   streamKey,
-  streamRotation
+  streamRotation,
+  remoteSessionDescriptor,
+  remoteDeviceStreamingEnabled,
+  onRemoteStreamStateChange
 }: EmulatorScreenSurfaceProps) {
   return (
     <div
@@ -97,6 +106,9 @@ export function EmulatorScreenSurface({
         streamError={streamError}
         streamKey={streamKey}
         streamRotation={streamRotation}
+        remoteSessionDescriptor={remoteSessionDescriptor}
+        remoteDeviceStreamingEnabled={remoteDeviceStreamingEnabled}
+        onRemoteStreamStateChange={onRemoteStreamStateChange}
       />
     </div>
   )
