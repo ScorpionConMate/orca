@@ -11773,7 +11773,18 @@
                 "6bd8dff42a": "Rotate",
                 "3d836b879c": "Choose emulator",
                 "81b3571a07": "Connect",
-                "868c0f2938": "Working…"
+                "868c0f2938": "Working…",
+                "local": {
+                  "live": "Live",
+                  "connecting": "Connecting",
+                  "offline": "Not connected"
+                },
+                "remote": {
+                  "connecting": "Connecting",
+                  "live": "Live",
+                  "recovering": "Recovering",
+                  "disconnected": "Disconnected"
+                }
               }
             },
             "screen": {
@@ -11782,7 +11793,20 @@
                   "8b1a0d8694": "Emulator preview",
                   "36841af608": "Stream disconnected",
                   "5f818f12ab": "Connecting emulator…",
-                  "5ee64cd44e": "Emulator screen"
+                  "5ee64cd44e": "Emulator screen",
+                  "remote": {
+                    "fallback": {
+                      "title": "Remote device streaming is not available.",
+                      "hint": "Enable the feature or connect a local device."
+                    },
+                    "connecting": "Connecting to remote device…",
+                    "recovering": "Recovering stream…",
+                    "disconnected": {
+                      "title": "Remote stream disconnected",
+                      "hint": "Host closed the session or the connection was lost.",
+                      "retry": "Retry"
+                    }
+                  }
                 }
               }
             },

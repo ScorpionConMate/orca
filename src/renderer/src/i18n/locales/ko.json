@@ -11750,7 +11750,18 @@
                 "6bd8dff42a": "회전",
                 "3d836b879c": "에뮬레이터 선택",
                 "81b3571a07": "연결",
-                "868c0f2938": "작업 중…"
+                "868c0f2938": "작업 중…",
+                "local": {
+                  "live": "Live",
+                  "connecting": "Connecting",
+                  "offline": "Not connected"
+                },
+                "remote": {
+                  "connecting": "Connecting",
+                  "live": "Live",
+                  "recovering": "Recovering",
+                  "disconnected": "Disconnected"
+                }
               }
             },
             "screen": {
@@ -11759,7 +11770,20 @@
                   "8b1a0d8694": "에뮬레이터 미리보기",
                   "36841af608": "스트림 연결이 끊어졌습니다.",
                   "5f818f12ab": "에뮬레이터 연결 중…",
-                  "5ee64cd44e": "에뮬레이터 화면"
+                  "5ee64cd44e": "에뮬레이터 화면",
+                  "remote": {
+                    "fallback": {
+                      "title": "Remote device streaming is not available.",
+                      "hint": "Enable the feature or connect a local device."
+                    },
+                    "connecting": "Connecting to remote device…",
+                    "recovering": "Recovering stream…",
+                    "disconnected": {
+                      "title": "Remote stream disconnected",
+                      "hint": "Host closed the session or the connection was lost.",
+                      "retry": "Retry"
+                    }
+                  }
                 }
               }
             },

@@ -108,7 +108,7 @@ export function EmulatorScreenStreamContent({
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-muted/20 text-muted-foreground">
             <span className="px-6 text-center text-xs">
               {translate(
-                'auto.components.emulator.pane.emulator.screen.stream.content.remote.fallback',
+                'auto.components.emulator.pane.emulator.screen.stream.content.remote.fallback.title',
                 'Remote device streaming is not available.'
               )}
             </span>
@@ -163,7 +163,7 @@ export function EmulatorScreenStreamContent({
           <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-muted/20 transition-opacity duration-150">
             <span className="px-6 text-center text-xs">
               {translate(
-                'auto.components.emulator.pane.emulator.screen.stream.content.remote.disconnected',
+                'auto.components.emulator.pane.emulator.screen.stream.content.remote.disconnected.title',
                 'Remote stream disconnected'
               )}
             </span>

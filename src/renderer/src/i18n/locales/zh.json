@@ -11750,7 +11750,18 @@
                 "6bd8dff42a": "旋转",
                 "3d836b879c": "选择模拟器",
                 "81b3571a07": "连接",
-                "868c0f2938": "处理中…"
+                "868c0f2938": "处理中…",
+                "local": {
+                  "live": "Live",
+                  "connecting": "Connecting",
+                  "offline": "Not connected"
+                },
+                "remote": {
+                  "connecting": "Connecting",
+                  "live": "Live",
+                  "recovering": "Recovering",
+                  "disconnected": "Disconnected"
+                }
               }
             },
             "screen": {
@@ -11759,7 +11770,20 @@
                   "8b1a0d8694": "模拟器预览",
                   "36841af608": "流已断开连接",
                   "5f818f12ab": "正在连接模拟器...",
-                  "5ee64cd44e": "模拟器屏幕"
+                  "5ee64cd44e": "模拟器屏幕",
+                  "remote": {
+                    "fallback": {
+                      "title": "Remote device streaming is not available.",
+                      "hint": "Enable the feature or connect a local device."
+                    },
+                    "connecting": "Connecting to remote device…",
+                    "recovering": "Recovering stream…",
+                    "disconnected": {
+                      "title": "Remote stream disconnected",
+                      "hint": "Host closed the session or the connection was lost.",
+                      "retry": "Retry"
+                    }
+                  }
                 }
               }
             },

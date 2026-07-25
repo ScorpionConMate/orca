@@ -11750,7 +11750,18 @@
                 "6bd8dff42a": "回転",
                 "3d836b879c": "エミュレータの選択",
                 "81b3571a07": "接続",
-                "868c0f2938": "処理中…"
+                "868c0f2938": "処理中…",
+                "local": {
+                  "live": "Live",
+                  "connecting": "Connecting",
+                  "offline": "Not connected"
+                },
+                "remote": {
+                  "connecting": "Connecting",
+                  "live": "Live",
+                  "recovering": "Recovering",
+                  "disconnected": "Disconnected"
+                }
               }
             },
             "screen": {
@@ -11759,7 +11770,20 @@
                   "8b1a0d8694": "エミュレータのプレビュー",
                   "36841af608": "ストリームが切断されました",
                   "5f818f12ab": "エミュレータを接続中…",
-                  "5ee64cd44e": "エミュレータ画面"
+                  "5ee64cd44e": "エミュレータ画面",
+                  "remote": {
+                    "fallback": {
+                      "title": "Remote device streaming is not available.",
+                      "hint": "Enable the feature or connect a local device."
+                    },
+                    "connecting": "Connecting to remote device…",
+                    "recovering": "Recovering stream…",
+                    "disconnected": {
+                      "title": "Remote stream disconnected",
+                      "hint": "Host closed the session or the connection was lost.",
+                      "retry": "Retry"
+                    }
+                  }
                 }
               }
             },

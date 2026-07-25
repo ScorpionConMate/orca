@@ -98,8 +98,30 @@ export const EMULATOR_METHODS: RpcAnyMethod[] = [
   defineMethod({ name: 'emulator.list', params: ListParams, handler: async (params, { runtime }) => runtime.emulatorList(params) }),
   defineMethod({ name: 'emulator.stream.open', params: StreamOpenParams, handler: async (params) => { requireDeviceStreamingEnabled(); return sessionToDescriptor(registerDeviceSession(params.sessionId, params.deviceId), params.deviceId) } }),
   defineMethod({ name: 'emulator.stream.close', params: StreamCloseParams, handler: async (params) => { requireDeviceStreamingEnabled(); unregisterDeviceSession(params.sessionId); return { ok: true } } }),
-  defineMethod({ name: 'emulator.session.list', params: z.object({}).partial(), handler: async () => { requireDeviceStreamingEnabled(); return listDeviceSessions().map((h) => sessionToDescriptor(h, h.sessionId)) } }),
-  defineMethod({ name: 'emulator.session.get', params: SessionGetParams, handler: async (params) => { requireDeviceStreamingEnabled(); const h = getDeviceSession(params.sessionId); return h ? sessionToDescriptor(h, h.sessionId) : null } }),
+  defineMethod({
+    name: 'emulator.session.list',
+    params: z.object({}).partial(),
+    handler: async (_params, { runtime }) => {
+      requireDeviceStreamingEnabled()
+      // Lazily register discovered Android AVDs as sessions so the renderer can pick one.
+      // Why: the host stub is empty until a device is observed; syncing on list keeps v1 manual
+      // testing working without a separate provider lifecycle. iOS sims are out of scope for v1.
+      try {
+        const devices = await runtime.emulatorListDevices({})
+        for (const device of devices) {
+          if (device.backend !== 'android' || !device.isAvailable) { continue }
+          const sessionId = `android:${device.id}`
+          if (!getDeviceSession(sessionId)) {
+            registerDeviceSession(sessionId, device.id)
+          }
+        }
+      } catch {
+        // Backend unavailable (no SDK, adb down) -> return whatever is already registered.
+      }
+      return listDeviceSessions().map((h) => sessionToDescriptor(h, h.deviceId))
+    }
+  }),
+  defineMethod({ name: 'emulator.session.get', params: SessionGetParams, handler: async (params) => { requireDeviceStreamingEnabled(); const h = getDeviceSession(params.sessionId); return h ? sessionToDescriptor(h, h.deviceId) : null } }),
   defineMethod({ name: 'emulator.attach', params: AttachParams, handler: async (params, { runtime }) => runtime.emulatorAttach(params) }),
   defineMethod({ name: 'emulator.tap', params: TapParams, handler: async (params, { runtime }) => runtime.emulatorTap(params) }),
   defineMethod({ name: 'emulator.gesture', params: GestureParams, handler: async (params, { runtime }) => runtime.emulatorGesture(params) }),
