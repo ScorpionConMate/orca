@@ -2191,6 +2191,10 @@ describe('orchestration RPC methods', () => {
         id: 'repo::parent',
         repoId: 'repo'
       } as never)
+      vi.spyOn(runtime, 'showRepo').mockResolvedValue({
+        id: 'repo',
+        kind: 'git'
+      } as never)
       const create = vi.spyOn(runtime, 'createManagedWorktree').mockResolvedValue({
         worktree: { id: 'repo::child', repoId: 'repo' },
         startupTerminal: { spawned: true, handle: 'term_worker' },
@@ -2446,6 +2450,7 @@ describe('orchestration RPC methods', () => {
       })) as {
         answer: string
         messageId: string
+        answerMessageId: string
         threadId: string
         timedOut: boolean
       }
@@ -2467,6 +2472,13 @@ describe('orchestration RPC methods', () => {
         status: 'answered',
         answer_body: 'go ahead'
       })
+      expect(db.getMessageById(result.answerMessageId)).toMatchObject({
+        to_handle: `dispatch:${dispatch.id}`,
+        read: 1
+      })
+      await expect(call('orchestration.check', { terminal: 'term_worker' })).resolves.toMatchObject(
+        { count: 0, messages: [] }
+      )
     })
 
     it('requires the Dispatch capability before creating a question', async () => {

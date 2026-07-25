@@ -355,6 +355,15 @@ function resolveMessageRun(
   return { run, dispatchId: dispatch?.id ?? dispatchId }
 }
 
+function rejectFederatedExplicitTarget(params: { to?: string; run?: string }): void {
+  if (params.to || params.run) {
+    throw new OrchestrationError(
+      'invalid_argument',
+      'Federated Dispatch messages route to their Run home; omit --to and --run.'
+    )
+  }
+}
+
 export const ORCHESTRATION_METHODS: RpcMethod[] = [
   ...ORCHESTRATION_RUN_METHODS,
   ...ORCHESTRATION_WORKER_METHODS,
@@ -371,6 +380,7 @@ export const ORCHESTRATION_METHODS: RpcMethod[] = [
         ? db.findActiveRemoteAttachmentForPane(senderPaneKey)
         : undefined
       if (remoteAttachment) {
+        rejectFederatedExplicitTarget(params)
         const processIncarnation = runtime.getTerminalProcessIncarnation(from)
         if (
           !db.verifyRemoteAttachmentAuthority({
@@ -1118,6 +1128,7 @@ export const ORCHESTRATION_METHODS: RpcMethod[] = [
       const paneKey = runtime.getTerminalPaneKey(from) ?? undefined
       const remoteAttachment = paneKey ? db.findActiveRemoteAttachmentForPane(paneKey) : undefined
       if (remoteAttachment) {
+        rejectFederatedExplicitTarget(params)
         return askRemoteRunHome({
           params,
           runtime,
