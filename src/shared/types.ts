@@ -2602,6 +2602,13 @@ export type HostSettingOverrides = {
 /** Presentation mode for the experimental Agent Dashboard. */
 export type AgentDashboardMode = 'in-window' | 'popout'
 
+/** Source of emulator device listing for the Mobile Emulator pane.
+ *  Per-worktree setting: controls which host's SDK is queried for AVDs. */
+export type MobileEmulatorProvider =
+  | { kind: 'follow-runtime' }
+  | { kind: 'local' }
+  | { kind: 'remote'; runtimeEnvironmentId: string }
+
 export type GlobalSettings = {
   workspaceDir: string
   /** Per-host overrides keyed by ExecutionHostId. Effective value for a
@@ -2899,6 +2906,8 @@ export type GlobalSettings = {
   mobileEmulatorEnabled?: boolean
   /** Preferred iOS Simulator UDID for UI auto-attach and agent CLI attach. */
   mobileEmulatorDefaultDeviceUdid?: string | null
+  /** Per-worktree emulator source: follow the active runtime, always local, or a specific remote runtime. */
+  mobileEmulatorProvider?: MobileEmulatorProvider
   /** Explicit Android SDK root for when auto-discovery (ANDROID_HOME / default path) fails; null (default) auto-discovers. */
   androidSdkPath?: string | null
   /** Auto-restore window (ms) for a phone-fit PTY after the last mobile subscriber leaves.

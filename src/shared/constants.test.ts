@@ -98,6 +98,10 @@ describe('getDefaultSettings', () => {
     expect(getDefaultSettings('/tmp').experimentalRemoteDeviceStreaming).toBe(false)
   })
 
+  it('defaults mobile emulator provider to follow-runtime', () => {
+    expect(getDefaultSettings('/tmp').mobileEmulatorProvider).toEqual({ kind: 'follow-runtime' })
+  })
+
   it('routes fresh Codex profiles through the real-home rollout by default', () => {})
 
   it('defaults local Windows projects to the host runtime', () => {

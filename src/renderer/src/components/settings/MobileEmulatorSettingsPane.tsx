@@ -8,8 +8,10 @@ import { Button } from '../ui/button'
 import { Label } from '../ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { AndroidLogo, IosBrandIcon } from '../mobile/MobileBrandIcons'
+import { EmulatorSourceSelector } from './EmulatorSourceSelector'
 import { MobileEmulatorAgentControlRow } from './MobileEmulatorAgentControlRow'
 import { MobileEmulatorAvailabilityDetails } from './MobileEmulatorAvailabilityDetails'
+import { MobileEmulatorSetupGuideSection } from './MobileEmulatorSetupGuideSection'
 import { SearchableSetting } from './SearchableSetting'
 import { SettingsRow, SettingsSwitchRow } from './SettingsFormControls'
 import { getMobileEmulatorSearchEntries } from './mobile-emulator-search'
@@ -291,6 +293,14 @@ export function MobileEmulatorSettingsPane({
           }
         />
       </SearchableSetting>
+
+      {enabled ? (
+        <EmulatorSourceSelector settings={settings} updateSettings={updateSettings} />
+      ) : null}
+
+      {enabled ? (
+        <MobileEmulatorSetupGuideSection />
+      ) : null}
 
       {enabled ? (
         <SearchableSetting

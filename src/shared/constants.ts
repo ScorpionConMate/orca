@@ -330,6 +330,7 @@ export function getDefaultSettings(homedir: string): GlobalSettings {
     experimentalMobile: false,
     mobileEmulatorEnabled: true,
     mobileEmulatorDefaultDeviceUdid: null,
+    mobileEmulatorProvider: { kind: 'follow-runtime' },
     androidSdkPath: null,
     // Why: indefinite hold — the "Restore" banner is the explicit return action, no wall-clock guess. See docs/mobile-fit-hold.md.
     mobileAutoRestoreFitMs: null,
@@ -347,7 +348,7 @@ export function getDefaultSettings(homedir: string): GlobalSettings {
     agentHibernationIdleMs: 30 * 60 * 1000,
     experimentalNewWorktreeCardStyle: false,
     experimentalEphemeralVms: false,
-    experimentalRemoteDeviceStreaming: false,
+    experimentalRemoteDeviceStreaming: true,
     compactWorktreeCards: false,
     // Why: local desktop stays the default until the user picks a saved runtime environment.
     activeRuntimeEnvironmentId: null,

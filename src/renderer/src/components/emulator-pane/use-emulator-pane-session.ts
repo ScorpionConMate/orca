@@ -1,20 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { callRuntimeRpc } from '@/runtime/runtime-rpc-client'
 import { useAppStore } from '@/store'
-import {
-  deviceLabel,
-  simulatorPreviewStreamUrl,
-  type EmulatorPaneSession,
-  type SimulatorDeviceRow
-} from './emulator-pane-types'
+import { translate } from '@/i18n/i18n'
+import { resolvedProviderToTarget, useResolvedEmulatorProvider } from './use-emulator-pane-provider'
+import { deviceLabel, simulatorPreviewStreamUrl, type EmulatorPaneSession, type SimulatorDeviceRow } from './emulator-pane-types'
 import { markSimulatorDeviceBooted, markSimulatorDeviceShutdown } from './emulator-device-state'
 import { toSimulatorDeviceRows, type RawEmulatorDevice } from './emulator-device-row-mapping'
 import { useEmulatorPaneControls } from './use-emulator-pane-controls'
 import { useEmulatorPaneSessionEvents } from './use-emulator-pane-session-events'
-import {
-  consumePrelaunchedSimulatorSession,
-  isManualSimulatorLaunchPending
-} from '@/lib/simulator-launch-coordination'
+import { consumePrelaunchedSimulatorSession, isManualSimulatorLaunchPending } from '@/lib/simulator-launch-coordination'
 import { shutdownManagedSimulatorIfNoPane } from '@/lib/simulator-pane-shutdown-scheduler'
 import { buildPrelaunchedEmulatorSessionState } from './emulator-prelaunched-session'
 import { useEmulatorPaneManualLaunchEvents } from './use-emulator-pane-manual-launch-events'
@@ -53,6 +48,8 @@ export function useEmulatorPaneSession({
   )
   const [error, setError] = useState<string | null>(null)
   const [streamKey, setStreamKey] = useState<string | null>(prelaunchedState.streamKey)
+  const resolvedProvider = useResolvedEmulatorProvider()
+  const autoFellBackToLocalRef = useRef(false)
   const mountedRef = useRef(true)
   const liveTargetRef = useRef<string | null>(prelaunchedState.liveTarget)
   const deviceRefreshErrorRef = useRef<unknown>(null)
@@ -69,14 +66,24 @@ export function useEmulatorPaneSession({
 
   const refreshDevices = useCallback(async (bootedTarget?: string | null) => {
     try {
-      // Unified list so Android devices/AVDs appear alongside iOS simulators.
+      const target = resolvedProviderToTarget(resolvedProvider)
       const raw = (await callRuntimeRpc(
-        { kind: 'local' },
+        target,
         'emulator.listDevices',
         {}
       )) as RawEmulatorDevice[]
       const list = toSimulatorDeviceRows(raw)
       const next = markSimulatorDeviceBooted(list, bootedTarget)
+      if (resolvedProvider.kind === 'remote' && raw.length === 0 && !autoFellBackToLocalRef.current) {
+        autoFellBackToLocalRef.current = true
+        toast.warning(
+          translate(
+            'auto.components.emulator.pane.use-emulator-pane-session.remoteNoSdk',
+            'Remote host "{{runtimeName}}" has no Android SDK; using local SDK.',
+            { runtimeName: resolvedProvider.runtimeName }
+          )
+        )
+      }
       if (!mountedRef.current) {
         return next
       }
@@ -95,7 +102,7 @@ export function useEmulatorPaneSession({
       }
       return []
     }
-  }, [])
+  }, [resolvedProvider])
 
   const applySession = useCallback(
     (info: EmulatorPaneSession['info'], attached = true, deviceRows = devices) => {
@@ -154,7 +161,6 @@ export function useEmulatorPaneSession({
     },
     [devices, resetVisualOrientation, selectedUdid, session, tabId]
   )
-
   const attach = useCallback(
     async (deviceTarget?: string) => {
       if (loading) {
@@ -196,7 +202,8 @@ export function useEmulatorPaneSession({
           liveTargetRef.current = null
           resetVisualOrientation()
         }
-        const res = (await callRuntimeRpc({ kind: 'local' }, 'emulator.attach', {
+        const runtimeTarget = resolvedProviderToTarget(resolvedProvider)
+        const res = (await callRuntimeRpc(runtimeTarget, 'emulator.attach', {
           device: target,
           worktree: worktreeId,
           focus: false
@@ -245,12 +252,12 @@ export function useEmulatorPaneSession({
       loading,
       refreshDevices,
       resetVisualOrientation,
+      resolvedProvider,
       selectedUdid,
       tabId,
       worktreeId
     ]
   )
-
   useEffect(() => {
     if (!selectedUdid && configuredDefaultUdid) {
       setSelectedUdid(configuredDefaultUdid)
@@ -276,21 +283,9 @@ export function useEmulatorPaneSession({
     void attach()
   }, [attach, autoAttachOnMount, loading, session])
 
-  useEmulatorPaneSessionEvents({
-    worktreeId,
-    applySession,
-    refreshDevices,
-    clearSessionAfterShutdown
-  })
+  useEmulatorPaneSessionEvents({ worktreeId, applySession, refreshDevices, clearSessionAfterShutdown })
 
-  useEmulatorPaneManualLaunchEvents({
-    worktreeId,
-    tabId,
-    session,
-    mountedRef,
-    setLoading,
-    setError
-  })
+  useEmulatorPaneManualLaunchEvents({ worktreeId, tabId, session, mountedRef, setLoading, setError })
 
   const view = buildEmulatorPaneSessionView({ devices, selectedUdid, session })
 
